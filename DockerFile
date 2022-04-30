@@ -1,0 +1,28 @@
+ FROM python:3.8.2
+
+    ENV PYTHONBUFFERED 1
+    ENV PYTHONWRITEBYTECODE 1
+
+    RUN apt-get update \
+        && apt-get install -y netcat
+
+    ENV APP=/dealership
+
+    # Change the workdir.
+    WORKDIR server
+
+    # Install the requirements
+    COPY requirements.txt /tmp/requirements.txt
+    RUN pip install --upgrade pip
+    RUN pip install -r /tmp/requirements.txt
+    # Copy the rest of the files
+    COPY . dealership
+
+
+    EXPOSE 8000
+
+    COPY entrypoint.sh /tmp/entrypoint.sh
+    RUN chmod +x /tmp/entrypoint.sh
+    ENTRYPOINT ["/entrypoint.sh"]
+
+    CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "djangobackend.wsgi"]
